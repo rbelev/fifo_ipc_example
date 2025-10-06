@@ -3,6 +3,18 @@ name = "fifo_ipc_example"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "pw-daemon"
+path = "src/daemon.rs"
+
+[[bin]]
+name = "pw-cli"
+path = "src/client.rs"
+
+[lib]
+name = "fifo_ipc"
+path = "src/lib.rs"
+
 [dependencies]
 anyhow = "1.0.100"
 nix = { version = "0.30.1", features = ["fs"] }
