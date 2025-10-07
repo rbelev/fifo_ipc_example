@@ -20,7 +20,6 @@ use nix::unistd;
 use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
-use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -53,14 +52,14 @@ fn client_get(account: &str) -> Result<()> {
     let resp: Response =
         serde_json::from_str(&buf).with_context(|| format!("parsing response JSON: {}", buf))?;
 
-    if resp.ok {
-        println!("Got password: {}", resp.password.unwrap_or_default());
-    } else {
-        eprintln!(
-            "Daemon error: {}",
-            resp.message.unwrap_or_else(|| "unknown".into())
-        );
-    }
+    match resp {
+        Response::GetPasswordResponse { password } => {
+            println!("Got password: {}", password);
+        }
+        Response::GetPasswordError { message } => {
+            eprintln!("Daemon error: {message}");
+        }
+    };
 
     // remove resp fifo (daemon also tries to remove it; ignore errors)
     let _ = fs::remove_file(&resp_path);

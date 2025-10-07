@@ -37,12 +37,6 @@ impl From<&'static str> for Action {
     }
 }
 
-// pub enum Request {
-//     GetPasswordRequest {
-//         account: String,
-//         resp_fifo: String,
-//     },
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Request {
     pub action: Action,
@@ -51,10 +45,12 @@ pub struct Request {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Response {
-    pub ok: bool,
-    pub message: Option<String>,
-    pub password: Option<String>,
+#[serde(tag = "ok")]
+pub enum Response {
+    #[serde(rename = "true")]
+    GetPasswordResponse { password: String },
+    #[serde(rename = "false")]
+    GetPasswordError { message: String },
 }
 
 pub fn ensure_request_fifo(path: &str) -> Result<()> {

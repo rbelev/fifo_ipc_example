@@ -18,7 +18,7 @@ use anyhow::{Context, Result};
 use fifo_ipc::{Action, REQUEST_FIFO, Request, Response, ensure_request_fifo};
 use std::env;
 use std::fs::{self, OpenOptions};
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -75,23 +75,15 @@ fn handle_request(req: &Request) -> Response {
             if let Some(account) = &req.account {
                 // mock password derivation
                 let pw = format!("pw-for-{}-{}", account, mock_timestamp());
-                Response {
-                    ok: true,
-                    message: None,
-                    password: Some(pw),
-                }
+                Response::GetPasswordResponse { password: pw }
             } else {
-                Response {
-                    ok: false,
-                    message: Some("missing account".into()),
-                    password: None,
+                Response::GetPasswordError {
+                    message: "missing account".into(),
                 }
             }
         }
-        _ => Response {
-            ok: false,
-            message: Some("unknown action".into()),
-            password: None,
+        _ => Response::GetPasswordError {
+            message: "unknown action".into(),
         },
     }
 }
