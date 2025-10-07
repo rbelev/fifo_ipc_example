@@ -58,19 +58,20 @@ pub struct Response {
 }
 
 pub fn ensure_request_fifo(path: &str) -> Result<()> {
-    // let path = Path::new(REQUEST_FIFO);
-
     // create a new fifo and give read, write and execute rights to the owner
     match unistd::mkfifo(path, Mode::S_IRWXU) {
         Ok(_) => Ok(()),
         Err(nix::Error::EEXIST) => {
-            let meta = fs::symlink_metadata(path)?;
-            if meta.file_type().is_fifo() {
-                Ok(())
-            } else {
-                anyhow::bail!("{REQUEST_FIFO} exists but is not a FIFO")
+            if is_fifo(path)? {
+                return Ok(());
             }
+            anyhow::bail!("{REQUEST_FIFO} *exists but is not a FIFO")
         }
         Err(err) => anyhow::bail!("mkfifo failed: {}", err),
     }
+}
+
+pub fn is_fifo(path: &str) -> Result<bool> {
+    let meta = fs::symlink_metadata(path)?;
+    Ok(meta.file_type().is_fifo())
 }
